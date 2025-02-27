@@ -194,12 +194,13 @@ def one_hot_encode(X, categorical_indices, drop_first=False):
             one_hot = one_hot[:, 1:]
 
         # TODO: Delete the original categorical column from X_transformed and insert new one-hot encoded columns
-        dic = {}
+        one_hot_dic = {}
         for encoding in one_hot:
-            dic[unique_values[np.where(np.all(one_hot == encoding,axis=1)) [0] [0]]] = encoding
-        columna  = np.array([dic[valor] for valor in X_transformed[:, index]])
+            one_hot_dic[unique_values[np.where(np.all(one_hot == encoding, axis=1))[0][0]]] = encoding
+
+        columna  = np.array([one_hot_dic[valor] for valor in X_transformed[:, index]])
 
         X_transformed = np.delete(X_transformed, index, axis=1)
-        X_transformed = np.column_stack((X_transformed[:, :index], columna , X_transformed[:, index]))
+        X_transformed = np.column_stack((X_transformed[:, :index], columna , X_transformed[:, index:]))
         
     return X_transformed
