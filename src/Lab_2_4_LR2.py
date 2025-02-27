@@ -65,10 +65,12 @@ class LinearRegressor:
             None: Modifies the model's coefficients and intercept in-place.
         """
         # Replace this code with the code you did in the previous laboratory session
-
+        X = np.c_[np.ones(X.shape[0]), X]
+        w = np.linalg.inv(np.transpose(X)@X) @ np.transpose(X) @ y
+            
+        self.intercept = w[0]
+        self.coefficients = w [1:]
         # Store the intercept and the coefficients of the model
-        self.intercept = None
-        self.coefficients = None
 
     def fit_gradient_descent(self, X, y, learning_rate=0.01, iterations=1000):
         """
@@ -93,17 +95,18 @@ class LinearRegressor:
 
         # Implement gradient descent (TODO)
         for epoch in range(iterations):
-            predictions = None
+            predictions = np.dot(X[:, 1:], self.coefficients) + self.intercept
             error = predictions - y
 
             # TODO: Write the gradient values and the updates for the paramenters
-            gradient = None
-            self.intercept -= None
-            self.coefficients -= None
+            gradient = (1 / m) * np.dot(X[:, 1:].T, error)
+
+            self.intercept -= learning_rate * ((1 / m) * np.sum(error))
+            self.coefficients -= learning_rate * gradient
 
             # TODO: Calculate and print the loss every 10 epochs
             if epoch % 1000 == 0:
-                mse = None
+                mse = np.mean(error)**2
                 print(f"Epoch {epoch}: MSE = {mse}")
 
     def predict(self, X):
@@ -120,13 +123,18 @@ class LinearRegressor:
         Raises:
             ValueError: If the model is not yet fitted.
         """
-
-        # Paste your code from last week
-
         if self.coefficients is None or self.intercept is None:
             raise ValueError("Model is not yet fitted")
 
-        return None
+        if np.ndim(X) == 1:
+            #  Predict when X is only one variable
+            predictions = self.intercept + self.coefficients * X
+        else:
+            # TODO: Predict when X is more than one variable
+            predictions =  self.intercept + np.dot(X, self.coefficients)   
+
+        return predictions
+        # Paste your code from last week
 
 
 def evaluate_regression(y_true, y_pred):
@@ -142,16 +150,18 @@ def evaluate_regression(y_true, y_pred):
     """
 
     # R^2 Score
-    # TODO
-    r_squared = None
+    # 
+    ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
+    ss_residual = np.sum((y_true - y_pred) ** 2)
+    r_squared = 1 - (ss_residual / ss_total)
 
     # Root Mean Squared Error
     # TODO
-    rmse = None
+    rmse = np.sqrt(np.mean((y_true - y_pred) ** 2))
 
     # Mean Absolute Error
     # TODO
-    mae = None
+    mae = np.mean(np.abs(y_true - y_pred))
 
     return {"R2": r_squared, "RMSE": rmse, "MAE": mae}
 
@@ -172,19 +182,24 @@ def one_hot_encode(X, categorical_indices, drop_first=False):
     X_transformed = X.copy()
     for index in sorted(categorical_indices, reverse=True):
         # TODO: Extract the categorical column
-        categorical_column = None
+        categorical_column = np.transpose(X)[index]
 
-        # TODO: Find the unique categories (works with strings)
-        unique_values = None
+        #TODO: Find the unique categories (works with strings)
+        unique_values = np.unique(categorical_column)
 
         # TODO: Create a one-hot encoded matrix (np.array) for the current categorical column
-        one_hot = None
-
+        one_hot = np.array([[1 if elemento == categoria else 0 for elemento in unique_values] for categoria in unique_values])
         # Optionally drop the first level of one-hot encoding
         if drop_first:
             one_hot = one_hot[:, 1:]
 
         # TODO: Delete the original categorical column from X_transformed and insert new one-hot encoded columns
-        X_transformed = None
+        dic = {}
+        for encoding in one_hot:
+            dic[unique_values[np.where(np.all(one_hot == encoding,axis=1)) [0] [0]]] = encoding
+        columna  = np.array([dic[valor] for valor in X_transformed[:, index]])
 
+        X_transformed = np.delete(X_transformed, index, axis=1)
+        X_transformed = np.column_stack((X_transformed[:, :index], columna , X_transformed[:, index]))
+        
     return X_transformed
